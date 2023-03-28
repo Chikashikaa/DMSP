@@ -151,7 +151,7 @@ namespace LR1
         }
         static void Main(string[] args)
         {
-            string filePath = "C:\\Users\\chika\\source\\repos\\LR1\\l1_2.txt";
+            string filePath = "LR1\\l1_2.txt";
             int[,] GMatrix = ReadGMatrix(filePath);
             int verticeCount = GMatrix.GetLength(0);
             int edgeCount = GetEdgeNumber(GMatrix);
