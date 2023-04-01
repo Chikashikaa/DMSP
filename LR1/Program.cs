@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace LR1
 {
@@ -23,120 +24,121 @@ namespace LR1
             public int Rank;
         }
 
-        public static int[,] ReadGMatrix(string filePath)
+        private static int[,] ReadGMatrix(string filePath)
         {
-            string[] input = File.ReadAllLines(@filePath);
+            string[] f = File.ReadAllLines(@filePath);
 
-            int VerticlesNum = Int32.Parse(input[0]);
-            int[,] GMatrix = new int[VerticlesNum, VerticlesNum];
-            Console.WriteLine(VerticlesNum);
-            for (int i = 1; i < VerticlesNum + 1; i++)
+            int v = Int32.Parse(f[0]);
+            int[,] Gm = new int[v, v];
+            Console.WriteLine(v);
+            for (int i = 1; i < v + 1; i++)
             {
-                string[] weights = input[i].Split(' ');
-                for (int j = 0; j < VerticlesNum; j++)
+                string[] w = f[i].Split(' ');
+                for (int j = 0; j < v; j++)
                 {
-                    GMatrix[i - 1, j] = Convert.ToInt32(weights[j]);
+                    Gm[i - 1, j] = Convert.ToInt32(w[j]);
                 }
-                Console.WriteLine(input[i]);
+                Console.WriteLine(f[i]);
             }
-            return GMatrix;
+            return Gm;
         }
-        public static int GetEdgeNumber(int[,] GMatrix)
+        private static int GetEdgeNumber(int[,] Gm)
         {
-            int edgeCount = 0;
-            for (int i = 0; i < GMatrix.GetLength(0); i++)
+            int e = 0;
+            for (int i = 0; i < Gm.GetLength(0); i++)
             {
-                for (int j = 0; j < GMatrix.GetLength(1); j++)
+                for (int j = 0; j < Gm.GetLength(1); j++)
                 {
-                    if (GMatrix[i, j] != 0)
+                    if (Gm[i, j] != 0)
                     {
-                        edgeCount++;
+                        e++;
                     }
                 }
             }
-            edgeCount = edgeCount / 2;
-            return edgeCount;
+            e /= 2;
+            return e;
         }       
-        public static Graph CreateGraph(int verticesCount, int edgesCount)
+        private static Graph CreateGraph(int v, int e)
         {
-            Graph graph = new Graph();
-            graph.VerticesCount = verticesCount;
-            graph.EdgesCount = edgesCount;
-            graph.edge = new Edge[graph.EdgesCount];
+            Graph g = new Graph();
+            g.VerticesCount = v;
+            g.EdgesCount = e;
+            g.edge = new Edge[g.EdgesCount];
 
-            return graph;
+            return g;
         }
-        public static Graph FillGraph(Graph graph, int[,] GMatrix)
+        private static Graph FillGraph(Graph g, int[,] Gm)
         {
             Console.WriteLine("\nГраф:");
             int e = 0;
-            for (int i = 0; i < GMatrix.GetLength(0); i++)
+            for (int i = 0; i < Gm.GetLength(0); i++)
             {
                 for (int j = 0; j < i; j++)
                 {
-                    if (GMatrix[i, j] != 0)
+                    if (Gm[i, j] != 0)
                     {
-                        graph.edge[e].Source = i;
-                        graph.edge[e].Destination = j;
-                        graph.edge[e].Weight = GMatrix[i, j];
-                        Console.WriteLine("{0} -- {1} == {2}", graph.edge[e].Source, graph.edge[e].Destination, graph.edge[e].Weight);                        
+                        g.edge[e].Source = i;
+                        g.edge[e].Destination = j;
+                        g.edge[e].Weight = Gm[i, j];
+                        Console.WriteLine("{0} -- {1} == {2}", g.edge[e].Source, g.edge[e].Destination, g.edge[e].Weight);                        
                         e++;
                     }
                 }
             }
             Console.WriteLine();
-            return graph;
+            return g;
         }
-        public static int Find(Subset[] subsets, int i)
+        private static int Find(Subset[] sub, int i)
         {
-            if (subsets[i].Parent != i)
-                subsets[i].Parent = Find(subsets, subsets[i].Parent);
+            if (sub[i].Parent != i)
+                sub[i].Parent = Find(sub, sub[i].Parent);
 
-            return subsets[i].Parent;
+            return sub[i].Parent;
         }
-        public static void Union(Subset[] subsets, int x, int y)
+        private static void Union(Subset[] sub, int x, int y)
         {
-            int xroot = Find(subsets, x);
-            int yroot = Find(subsets, y);
+            int xroot = Find(sub, x);
+            int yroot = Find(sub, y);
 
-            if (subsets[xroot].Rank < subsets[yroot].Rank)
-                subsets[xroot].Parent = yroot;
-            else if (subsets[xroot].Rank > subsets[yroot].Rank)
-                subsets[yroot].Parent = xroot;
+            if (sub[xroot].Rank < sub[yroot].Rank)
+                sub[xroot].Parent = yroot;
+            else if (sub[xroot].Rank > sub[yroot].Rank)
+                sub[yroot].Parent = xroot;
             else
             {
-                subsets[yroot].Parent = xroot;
-                ++subsets[xroot].Rank;
+                sub[yroot].Parent = xroot;
+                ++sub[xroot].Rank;
             }
         }
-        public static void Print(Edge[] result, int e)
+        private static void Print(Edge[] result, int e)
         {
+            Console.WriteLine("\nОстове дерево:");
             for (int i = 0; i < e; ++i)
                 Console.WriteLine("{0} -- {1} == {2}", result[i].Source, result[i].Destination, result[i].Weight);
         }
-        public static void Kruskal(Graph graph)
+        private static void Kruskal(Graph g)
         {
-            int verticesCount = graph.VerticesCount;
-            Edge[] result = new Edge[verticesCount];
+            int vc = g.VerticesCount;
+            Edge[] result = new Edge[vc];
             int i = 0;
             int e = 0;
 
-            Array.Sort(graph.edge, delegate (Edge a, Edge b)
+            Array.Sort(g.edge, delegate (Edge a, Edge b)
             {
                 return a.Weight.CompareTo(b.Weight);
             });
 
-            Subset[] subsets = new Subset[verticesCount];
+            Subset[] subsets = new Subset[vc];
 
-            for (int v = 0; v < verticesCount; ++v)
+            for (int v = 0; v < vc; ++v)
             {
                 subsets[v].Parent = v;
                 subsets[v].Rank = 0;
             }
 
-            while (e < verticesCount - 1)
+            while (e < vc - 1)
             {
-                Edge nextEdge = graph.edge[i++];
+                Edge nextEdge = g.edge[i++];
                 int x = Find(subsets, nextEdge.Source);
                 int y = Find(subsets, nextEdge.Destination);
 
@@ -151,14 +153,21 @@ namespace LR1
         }
         static void Main(string[] args)
         {
-            string filePath = "LR1\\l1_2.txt";
-            int[,] GMatrix = ReadGMatrix(filePath);
-            int verticeCount = GMatrix.GetLength(0);
-            int edgeCount = GetEdgeNumber(GMatrix);
-            Graph graph = CreateGraph(verticeCount, edgeCount);
-            graph = FillGraph(graph, GMatrix);
-            Console.WriteLine(graph.VerticesCount);
-            Console.WriteLine(graph.EdgesCount);
+            string filePath;
+            int[,] GMatrix;
+            int verticeCount;
+            int edgeCount;
+            Graph graph;
+
+            filePath = "C:\\Users\\chika\\source\\repos\\LR1\\l1_2.txt";
+            GMatrix = ReadGMatrix(filePath);
+            verticeCount = GMatrix.GetLength(0);
+            edgeCount = GetEdgeNumber(GMatrix);
+            graph = FillGraph(CreateGraph(verticeCount, edgeCount), GMatrix);
+
+            Console.OutputEncoding = Encoding.UTF8;
+            Console.WriteLine("Кількість вершин: {0}", graph.VerticesCount);
+            Console.WriteLine("Кількість ребер: {0}", graph.EdgesCount);
             Kruskal(graph);
             Console.ReadLine();
         }        
