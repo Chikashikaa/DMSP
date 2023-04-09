@@ -77,10 +77,10 @@ namespace LR1
                 {
                     if (Gm[i, j] != 0)
                     {
-                        g.edge[e].Source = i;
-                        g.edge[e].Destination = j;
+                        g.edge[e].Source = j;
+                        g.edge[e].Destination = i;
                         g.edge[e].Weight = Gm[i, j];
-                        Console.WriteLine("{0} -- {1} == {2}", g.edge[e].Source, g.edge[e].Destination, g.edge[e].Weight);                        
+                        Console.WriteLine("{0} -- {1} == {2}", g.edge[e].Source + 1, g.edge[e].Destination + 1, g.edge[e].Weight);                        
                         e++;
                     }
                 }
@@ -114,7 +114,7 @@ namespace LR1
         {
             Console.WriteLine("\nОстове дерево:");
             for (int i = 0; i < e; ++i)
-                Console.WriteLine("{0} -- {1} == {2}", result[i].Source, result[i].Destination, result[i].Weight);
+                Console.WriteLine("{0} -- {1} == {2}", result[i].Source + 1, result[i].Destination + 1, result[i].Weight);
         }
         private static void Kruskal(Graph g)
         {
