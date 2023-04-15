@@ -10,7 +10,6 @@ namespace LR3
 {
     class Program
     {
-        private const int INF = 10000;
         public struct Edge
         {
             public int Source;
@@ -102,9 +101,30 @@ namespace LR3
             }
             return nx;
         }
+        private static Edge[] NearestNeighbor(Edge[] resEdge, int[,] GMatrix, int startpoint)
+        {
+            int verticeCount = GMatrix.GetLength(0), nx, u;
+            bool[] isvisited = new bool[verticeCount];
+            u = startpoint;
+            for (int i = 0; i < verticeCount; i++)
+            {
+                if (isvisited[startpoint] == false)
+                {
+                    isvisited[startpoint] = true;
+                    nx = FindMin(GMatrix, startpoint, isvisited);
+                    resEdge[i].Source = startpoint;
+                    resEdge[i].Destination = nx;
+                    resEdge[i].Weight = GMatrix[startpoint, nx];
+                    startpoint = nx;
+                }
+            }
+            resEdge[verticeCount - 1].Source = startpoint;
+            resEdge[verticeCount - 1].Destination = u;
+            resEdge[verticeCount - 1].Weight = GMatrix[u, startpoint];
+            return resEdge;
+        }
         public static void Main(String[] args)
         {
-            bool[] isvisited;
             string filePath;
             int[,] GMatrix;
             int verticeCount, edgeCount, startpoint, w = 0, nx;
@@ -116,7 +136,6 @@ namespace LR3
             GMatrix = ReadGMatrix(filePath);
             verticeCount = GMatrix.GetLength(0);
             edgeCount = GetEdgeNumber(GMatrix);
-            isvisited = new bool[verticeCount];
             resEdge = new Edge[verticeCount];
             graph = FillGraph(CreateGraph(verticeCount, edgeCount), GMatrix);
             startpoint = rnd.Next(0, verticeCount);
@@ -126,18 +145,7 @@ namespace LR3
             Console.WriteLine("Ребер: {0}\n", edgeCount);
             Console.WriteLine("\nСтартова точка: " + (startpoint + 1));
 
-            for (int i = 0; i < verticeCount; i++)
-            {
-                if (isvisited[startpoint] == false)
-                {
-                    isvisited[startpoint] = true;
-                    nx = FindMin(GMatrix, startpoint, isvisited);
-                    resEdge[i].Source = startpoint;
-                    resEdge[i].Destination = nx;
-                    resEdge[i].Weight = GMatrix[startpoint, nx];
-                    startpoint = nx;
-                }                
-            }
+            NearestNeighbor(resEdge, GMatrix, startpoint);
             for (int i = 0; i < resEdge.Length; i++)
             {
                 Console.WriteLine("{0} ребро шляху:  {1} -- {2} = {3}", i + 1, resEdge[i].Source + 1, resEdge[i].Destination + 1, resEdge[i].Weight);
